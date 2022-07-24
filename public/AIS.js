@@ -18,7 +18,7 @@ const sixBitAscii = ['@','A','B','C','D','E','F','G','H','I','J','K','L','M','N'
         '.','/','0','1','2','3','4','5','6','7','8','9',':',';','<',
         '=','>','?'];
 
-const colors = ['red','blue'];
+const colors = ['red','red','red','blue'];
 
 const messageType = ['Position Report Class A','Position Report Class A (Assigned schedule)',
 'Position Report Class A (Response to interrogation)','Base Station Report','Static and Voyage Related Data',
@@ -123,14 +123,16 @@ var parsers = [
 	parseBaseStationReport
 ]
 
-function drawVessel(lon,lat){
+function drawVessel(vessel){
+	let lon = vessels[i].lon;
+	let lat = vessels[i].lat;
 	let lonDelta = lon - 23.9282;
 	let latDelta = lat - 59.8545;
 	let lonRelative = lonDelta/1.0396;
 	let latRelative = latDelta/0.3672;
 	let lonPixels = parseInt(lonRelative * 948);
 	let latPixels = 667-parseInt(latRelative * 667);
-	ctx.fillStyle = 'red';
+	ctx.fillStyle = colors[vessel.type-1];
 	ctx.beginPath();
 	ctx.arc(lonPixels,latPixels,10,0,Math.PI*2);
 	ctx.fill();
@@ -140,9 +142,8 @@ function drawVessel(lon,lat){
 function drawAllVessels(){
 	ctx.drawImage(image,0,0);
 	for (let i=0; i<vessels.length; i++){
-		let lon = vessels[i].lon;
-		let lat = vessels[i].lat;
-		drawVessel(lon,lat);
+
+		drawVessel(vessel);
 	}
 }
 

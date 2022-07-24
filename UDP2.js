@@ -2,6 +2,7 @@ const dgram     = require("dgram");
 const socket    = dgram.createSocket({type: "udp4", reuseAddr: true});
 const http      = require("http");
 const path      = require("path");
+const fs        = require("fs");
 const express   = require("express");
 const socketIO  = require("socket.io");
 
@@ -11,7 +12,8 @@ let io          = socketIO(server);
 
 socket.on("message", (msg, rinfo) =>{
     io.emit("newMessage", msg.toString());
-    console.log("server got ${msg}");
+    console.log(msg);
+    fs.appendFileSync("AIS.txt", msg + "\n");
 });
 
 socket.bind(3000, "127.0.0.1", () => {
