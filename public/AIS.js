@@ -143,7 +143,7 @@ function drawAllVessels(){
 	ctx.drawImage(image,0,0);
 	for (let i=0; i<vessels.length; i++){
 
-		drawVessel(vessel);
+		drawVessel(vessels[i]);
 	}
 }
 
