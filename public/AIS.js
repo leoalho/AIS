@@ -132,7 +132,7 @@ function drawVessel(vessel){
 	let latRelative = latDelta/0.3672;
 	let lonPixels = parseInt(lonRelative * 948);
 	let latPixels = 667-parseInt(latRelative * 667);
-	ctx.fillStyle = colors[vessel.type-1];
+	ctx.fillStyle = colors[vessel.messageType-1];
 	ctx.beginPath();
 	ctx.arc(lonPixels,latPixels,10,0,Math.PI*2);
 	ctx.fill();
