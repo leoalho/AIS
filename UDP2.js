@@ -13,7 +13,7 @@ let io          = socketIO(server);
 socket.on("message", (msg, rinfo) =>{
     io.emit("newMessage", msg.toString());
     console.log(msg.toString());
-    fs.appendFileSync("AIS.txt", msg + "\n");
+    fs.appendFileSync("AIS.txt", msg);
 });
 
 socket.bind(3000, "127.0.0.1", () => {
