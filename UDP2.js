@@ -1,5 +1,5 @@
 const dgram     = require("dgram");
-const socket    = dgram.createSocket("udp4");
+const socket    = dgram.createSocket({type: "udp4", reuseAddr: true});
 const http      = require("http");
 const path      = require("path");
 const express   = require("express");
@@ -21,8 +21,8 @@ socket.bind(3000, "127.0.0.1", () => {
 const publicPath    = path.join(__dirname, "./public");
 app.use(express.static(publicPath));
 
-server.listen(80, "127.0.0.1", () =>{
-    console.log("HTTP server listening on port 80");
+server.listen(8080, "127.0.0.1", () =>{
+    console.log("HTTP server listening on port 8080");
 });
 
 io.on("connection", (socket) => {
