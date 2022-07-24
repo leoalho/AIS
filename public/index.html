@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <style>
+            .main{
+            	display: flex;
+            	flex-wrap: wrap;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="main">
+            <div>
+                <input id="message" type="text"/>
+                <button id="submit">Send AIS data</button>
+            </div>
+            <div>
+                <canvas id="canvas"></canvas>
+            </div>
+            <div id="decoded"></div>
+        </div>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="./AIS.js"></script>
+    </body>
+</html>
