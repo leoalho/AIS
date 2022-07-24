@@ -124,8 +124,8 @@ var parsers = [
 ]
 
 function drawVessel(vessel){
-	let lon = vessels[i].lon;
-	let lat = vessels[i].lat;
+	let lon = vessel.lon;
+	let lat = vessel.lat;
 	let lonDelta = lon - 23.9282;
 	let latDelta = lat - 59.8545;
 	let lonRelative = lonDelta/1.0396;
