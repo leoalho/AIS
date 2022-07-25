@@ -11,6 +11,7 @@ image.onload = ()=>{
 }
 
 var vessels = [];
+var voyageMessages = [];
 
 const sixBitAscii = ['@','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O',
         'P','Q','R','S','T','U','V','W','X','Y','Z','[','\\',']','^',
@@ -18,7 +19,8 @@ const sixBitAscii = ['@','A','B','C','D','E','F','G','H','I','J','K','L','M','N'
         '.','/','0','1','2','3','4','5','6','7','8','9',':',';','<',
         '=','>','?'];
 
-const colors = ['red','red','red','blue'];
+// old version const colors = ['red','red','red','blue'];
+const colors = {1: 'red', 2: 'red', 3: 'red', 4: 'blue', 5: 'red'}; //not yet in use
 
 const messageType = ['Position Report Class A','Position Report Class A (Assigned schedule)',
 'Position Report Class A (Response to interrogation)','Base Station Report','Static and Voyage Related Data',
@@ -83,6 +85,16 @@ function getCoord(coord){
 	}
 }
 
+function parseToText(message){
+	let sign = ""
+	messageLength = message.length/6;
+	for (let i=0; i<messageLength; i++){
+		sign += sixBitAscii[parseInt(message.slice(i*6,i*6+6),2)];
+	}
+	neatSign = sign.replace(/\s+/g, '');
+	return neatSign;
+}
+
 function parsePositionReport(message){
 	let report = {};
 	report.messageType = parseInt(message.slice(0,6),2);
@@ -116,12 +128,43 @@ function parseBaseStationReport(payload){
 	return report;
 }
 
-var parsers = [
+function parseVoyageRelatedData(payload){
+	let report = {};
+	report.messageType = parseInt(payload.slice(0,6),2);
+	report.MMSI = parseInt(payload.slice(8,38),2);
+	report.AISversion = parseInt(payload.slice(38,40),2);
+	report.IMO = parseInt(payload.slice(40,70),2);
+	report.callSign = parseToText(payload.slice(70,112));
+	report.shipname = parseToText(payload.slice(112,232));
+	report.shipType = parseInt(payload.slice(232,240),2);
+	report.to_bow = parseInt(payload.slice(240,249),2);
+	report.to_stern = parseInt(payload.slice(249,258),2);
+	report.to_port = parseInt(payload.slice(258,264),2);
+	report.to_starboard = parseInt(payload.slice(264,270),2);
+	report.epfd = parseInt(payload.slice(270,274),2);
+	report.ETAmonth = parseInt(payload.slice(274,278),2);
+	report.ETAday = parseInt(payload.slice(278,283),2);
+	report.ETAhour = parseInt(payload.slice(283,288),2);
+	report.ETAminute = parseInt(payload.slice(288,294),2);
+	report.draught = parseInt(payload.slice(294,302),2)/10;
+	report.destination = parseToText(payload.slice(302,422));
+	report.dte = parseInt(payload.slice(422,423),2);
+	return report;
+}
+
+/* old version var parsers = [
 	parsePositionReport,
 	parsePositionReport,
 	parsePositionReport,
-	parseBaseStationReport
+	parseBaseStationReport,
+	parseVoyageRelatedData
 ]
+*/
+var parsers = {1: parsePositionReport,
+	2: parsePositionReport,
+	3: parsePositionReport,
+	4: parseBaseStationReport,
+	5: parseVoyageRelatedData}; //not yet in use
 
 function drawVessel(vessel){
 	let lon = vessel.lon;
@@ -132,7 +175,7 @@ function drawVessel(vessel){
 	let latRelative = latDelta/0.3672;
 	let lonPixels = parseInt(lonRelative * 948);
 	let latPixels = 667-parseInt(latRelative * 667);
-	ctx.fillStyle = colors[vessel.messageType-1];
+	ctx.fillStyle = colors[vessel.messageType];
 	ctx.beginPath();
 	ctx.arc(lonPixels,latPixels,10,0,Math.PI*2);
 	ctx.fill();
@@ -142,20 +185,26 @@ function drawVessel(vessel){
 function drawAllVessels(){
 	ctx.drawImage(image,0,0);
 	for (let i=0; i<vessels.length; i++){
-
-		drawVessel(vessels[i]);
+		if (vessels[i].lat < 60.2217 && vessels[i].lat>59.8545 && vessels[i].lon>23.9282 && vessels[i].lon<24.9678){
+			drawVessel(vessels[i]);
+		}
 	}
 }
 
 function updateVessels(vessel){
 	for (let i=0; i<vessels.length; i++){
 		if (vessels[i].MMSI==vessel.MMSI){
-			vessels[i]=vessel;
+			let keys = Object.keys(vessel);
+			keys.forEach((key)=>{
+				vessels[i][key]=vessel[key];
+			});
 			return;
 		}
 	}
 	vessels.push(vessel);
 }
+
+var multipartMessage = [];
 
 function parseMessage(message){
 	message = String(message);
@@ -163,6 +212,18 @@ function parseMessage(message){
 	// console.log('Received AIS-message: ' + messageArray);
 	if (message.slice(0,2)!="!A" || messageArray.length==1){
 		return("Error parsing data, possibly not a proper NMEA AIS message.")
+	}
+	if (messageArray[1]>1){
+		if (messageArray[2]==1){
+			multipartMessage = messageArray;
+			return("Received first part of a multipart message ... awaiting next parts")
+		}else if (multipartMessage[3]==messageArray[3]){
+			messageArray[5] = multipartMessage[5] + messageArray[5];
+			console.log(messageArray[5]);
+			multipartMessage = [];
+		}else{
+			return("Did not find earlier messages with same id")
+		}
 	}
 	let payload = messageArray[5];
 	bitPayload = toSixBitArray(payload);
@@ -172,12 +233,10 @@ function parseMessage(message){
 	if (type > parsers.length){
 		return('Message type not yet supported :(')
 	}else{
-		let parsedPayload = parsers[type-1](bitPayload);
-		if (parsedPayload.lat < 60.2217 && parsedPayload.lat>59.8545 && parsedPayload.lon>23.9282 && parsedPayload.lon<24.9678){
-			updateVessels(parsedPayload);
-			console.table(vessels);
-			drawAllVessels();
-		}
+		let parsedPayload = parsers[type](bitPayload);
+		updateVessels(parsedPayload);
+		console.table(vessels);
+		drawAllVessels();
 		return parsedPayload;
 	}
 		
