@@ -230,7 +230,7 @@ function parseMessage(message){
 	// console.log('Binary payload: '+bitPayload);
 	let type= parseInt(bitPayload.slice(0,6),2);
 	// console.log('Message type: '+type+' ('+messageType[type-1]+')');
-	if (type > parsers.length){
+	if (!parsers[type]){
 		return('Message type not yet supported :(')
 	}else{
 		let parsedPayload = parsers[type](bitPayload);
