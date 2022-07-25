@@ -219,7 +219,7 @@ function parseMessage(message){
 			return("Received first part of a multipart message ... awaiting next parts")
 		}else if (multipartMessage[3]==messageArray[3]){
 			messageArray[5] = multipartMessage[5] + messageArray[5];
-			console.log(messageArray[5]);
+			// console.log(messageArray[5]);
 			multipartMessage = [];
 		}else{
 			return("Did not find earlier messages with same id")
