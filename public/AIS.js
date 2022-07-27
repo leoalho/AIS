@@ -19,8 +19,7 @@ const sixBitAscii = ['@','A','B','C','D','E','F','G','H','I','J','K','L','M','N'
         '.','/','0','1','2','3','4','5','6','7','8','9',':',';','<',
         '=','>','?'];
 
-// old version const colors = ['red','red','red','blue'];
-const colors = {1: 'red', 2: 'red', 3: 'red', 4: 'blue', 5: 'red'}; //not yet in use
+const colors = {1: 'red', 2: 'red', 3: 'red', 4: 'blue', 5: 'red',8: 'green'}; //not yet in use
 
 const messageType = ['Position Report Class A','Position Report Class A (Assigned schedule)',
 'Position Report Class A (Response to interrogation)','Base Station Report','Static and Voyage Related Data',
@@ -152,19 +151,47 @@ function parseVoyageRelatedData(payload){
 	return report;
 }
 
-/* old version var parsers = [
-	parsePositionReport,
-	parsePositionReport,
-	parsePositionReport,
-	parseBaseStationReport,
-	parseVoyageRelatedData
-]
-*/
+function parseBinaryBroadcast(payload){
+	let report = {};
+	report.messageType = parseInt(payload.slice(0,6),2);
+	report.MMSI = parseInt(payload.slice(8,38),2);
+	report.dac = parseInt(payload.slice(40,50),2);
+	report.fid = parseInt(payload.slice(50,56),2);
+	if (report.dac==1 && report.fid ==11){
+		report.lat = getCoord(payload.slice(56,80))*10;
+		report.lon = getCoord(payload.slice(80,105))*10;
+		report.day = parseInt(payload.slice(105,110),2);
+		report.hour = parseInt(payload.slice(110,115),2);
+		report.minute = parseInt(payload.slice(115,121),2);
+		report.wspeed = parseInt(payload.slice(121,128),2);
+		report.wgust = parseInt(payload.slice(128,135),2);
+		report.wdir = parseInt(payload.slice(135,144),2);
+		report.wgustdir = parseInt(payload.slice(144,153),2);
+		report.temperature = parseInt(payload.slice(153,164),2);
+		report.humidity = parseInt(payload.slice(164,171),2);
+		report.dewpoint = parseInt(payload.slice(171,181),2);
+		report.pressure = parseInt(payload.slice(181,190),2);
+		report.pressuretend = parseInt(payload.slice(190,192),2);
+		report.visibility = parseInt(payload.slice(192,200),2)/10;
+		report.waterlevel = parseInt(payload.slice(200,209),2); //fix this
+		report.leveltrend = parseInt(payload.slice(209,211),2);
+		report.cspeed = parseInt(payload.slice(211,219),2);
+		report.cdir = parseInt(payload.slice(219,228),2);
+		report.cspeed2 = parseInt(payload.slice(228,236),2)/10;
+		// not yet full message
+		return report;
+	}
+	return("This type of binary broadcast not yet fully supported")
+}
+
 var parsers = {1: parsePositionReport,
 	2: parsePositionReport,
 	3: parsePositionReport,
 	4: parseBaseStationReport,
-	5: parseVoyageRelatedData}; //not yet in use
+	5: parseVoyageRelatedData,
+	8: parseBinaryBroadcast
+};
+
 
 function drawVessel(vessel){
 	let lon = vessel.lon;
@@ -235,7 +262,8 @@ function parseMessage(message){
 	}else{
 		let parsedPayload = parsers[type](bitPayload);
 		updateVessels(parsedPayload);
-		console.table(vessels);
+		// console.table(vessels);
+		console.log(vessels);
 		drawAllVessels();
 		return parsedPayload;
 	}
