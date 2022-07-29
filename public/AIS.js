@@ -19,7 +19,7 @@ const sixBitAscii = ['@','A','B','C','D','E','F','G','H','I','J','K','L','M','N'
         '.','/','0','1','2','3','4','5','6','7','8','9',':',';','<',
         '=','>','?'];
 
-const colors = {1: 'red', 2: 'red', 3: 'red', 4: 'blue', 5: 'red',8: 'green'}; //not yet in use
+const colors = {1: 'red', 2: 'red', 3: 'red', 4: 'blue', 5: 'red',8: 'green'};
 
 const messageType = ['Position Report Class A','Position Report Class A (Assigned schedule)',
 'Position Report Class A (Response to interrogation)','Base Station Report','Static and Voyage Related Data',
@@ -181,7 +181,7 @@ function parseBinaryBroadcast(payload){
 		// not yet full message
 		return report;
 	}
-	return("This type of binary broadcast not yet fully supported")
+	console.log("This type of binary broadcast not yet fully supported");
 }
 
 var parsers = {1: parsePositionReport,
@@ -192,24 +192,31 @@ var parsers = {1: parsePositionReport,
 	8: parseBinaryBroadcast
 };
 
-
-function drawVessel(vessel){
+function getPixels(vessel){
+	let pixels={};
 	let lon = vessel.lon;
 	let lat = vessel.lat;
 	let lonDelta = lon - 23.9282;
 	let latDelta = lat - 59.8545;
 	let lonRelative = lonDelta/1.0396;
 	let latRelative = latDelta/0.3672;
-	let lonPixels = parseInt(lonRelative * 948);
-	let latPixels = 667-parseInt(latRelative * 667);
+	pixels.lon = parseInt(lonRelative * 948);
+	pixels.lat = 667-parseInt(latRelative * 667);
+	return pixels;
+}
+
+function drawVessel(vessel){
+	let pixels=getPixels(vessel);
 	ctx.fillStyle = colors[vessel.messageType];
 	ctx.beginPath();
-	ctx.arc(lonPixels,latPixels,10,0,Math.PI*2);
+	ctx.arc(pixels.lon,pixels.lat,10,0,Math.PI*2);
 	ctx.fill();
 	ctx.stroke();
 }
 
+
 function drawAllVessels(){
+	ctx.lineWidth = 3;
 	ctx.drawImage(image,0,0);
 	for (let i=0; i<vessels.length; i++){
 		if (vessels[i].lat < 60.2217 && vessels[i].lat>59.8545 && vessels[i].lon>23.9282 && vessels[i].lon<24.9678){
@@ -258,7 +265,7 @@ function parseMessage(message){
 	let type= parseInt(bitPayload.slice(0,6),2);
 	// console.log('Message type: '+type+' ('+messageType[type-1]+')');
 	if (!parsers[type]){
-		return('Message type not yet supported :(')
+		console.log('Message type not yet supported :(')
 	}else{
 		let parsedPayload = parsers[type](bitPayload);
 		updateVessels(parsedPayload);
@@ -270,6 +277,28 @@ function parseMessage(message){
 		
 }	
 
+canvas.addEventListener("mousemove", function(e) { 
+    var cRect = canvas.getBoundingClientRect();        // Gets CSS pos, and width/height
+    var canvasX = Math.round(e.clientX - cRect.left);  // Subtract the 'left' of the canvas 
+    var canvasY = Math.round(e.clientY - cRect.top);   // from the X/Y positions to make  
+	ctx.drawImage(image,0,0);
+    vessels.forEach(vessel =>{
+		let pixels=getPixels(vessel);
+		ctx.beginPath();
+		ctx.arc(pixels.lon,pixels.lat,10,0,Math.PI*2);
+
+        if (ctx.isPointInPath(canvasX,canvasY)){
+            ctx.lineWidth = 5;
+			document.getElementById('decoded').innerText=JSON.stringify(vessel, null, '\t')
+        }else{
+            ctx.lineWidth = 3;
+        }
+		drawVessel(vessel);
+        
+    })
+
+});
+
 function getMessage(){
 	let message = document.getElementById('message').value;
 
@@ -279,8 +308,10 @@ function getMessage(){
 	document.getElementById('message').value = '';
 }
 
-document.getElementById('submit').addEventListener('click', getMessage)
+// document.getElementById('submit').addEventListener('click', getMessage)
 
 socket.on('newMessage', (message)=>{
-	document.getElementById('decoded').innerText=JSON.stringify(parseMessage(message), null, '\t')
+	// document.getElementById('decoded').innerText=JSON.stringify(parseMessage(message), null, '\t')
+	parseMessage(message)
 })
+
