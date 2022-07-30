@@ -73,8 +73,8 @@ function parsePositionReport(message){
 
 function parseBaseStationReport(payload){
 	let report = {};
-    report.messageType = parseInt(message.slice(0,6),2);
-	report.messageType1 = messageType[parseInt(message.slice(0,6),2)-1];
+    report.messageType = parseInt(payload.slice(0,6),2);
+	report.messageType1 = messageType[parseInt(payload.slice(0,6),2)-1];
 	report.MMSI = parseInt(payload.slice(8,38),2);
 	report.year = parseInt(payload.slice(38,52),2);
 	report.month = parseInt(payload.slice(53,56),2);
@@ -91,8 +91,8 @@ function parseBaseStationReport(payload){
 
 function parseVoyageRelatedData(payload){
 	let report = {};
-    report.messageType = parseInt(message.slice(0,6),2);
-	report.messageType1 = messageType[parseInt(message.slice(0,6),2)-1];
+    report.messageType = parseInt(payload.slice(0,6),2);
+	report.messageType1 = messageType[parseInt(payload.slice(0,6),2)-1];
 	report.MMSI = parseInt(payload.slice(8,38),2);
 	report.AISversion = parseInt(payload.slice(38,40),2);
 	report.IMO = parseInt(payload.slice(40,70),2);
@@ -116,8 +116,8 @@ function parseVoyageRelatedData(payload){
 
 function parseBinaryBroadcast(payload){
 	let report = {};
-    report.messageType = parseInt(message.slice(0,6),2);
-	report.messageType1 = messageType[parseInt(message.slice(0,6),2)-1];
+    report.messageType = parseInt(payload.slice(0,6),2);
+	report.messageType1 = messageType[parseInt(payload.slice(0,6),2)-1];
 	report.MMSI = parseInt(payload.slice(8,38),2);
 	report.dac = parseInt(payload.slice(40,50),2);
 	report.fid = parseInt(payload.slice(50,56),2);
