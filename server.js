@@ -11,8 +11,9 @@ const uri = "mongodb://localhost:27017";
 console.log("Connecting to database...");
 const client = new MongoClient(uri);
 console.log("Connected to database");
-const database = client.db('testi');
-const users = database.collection("users");
+const database = client.db('AIS');
+const vessels = database.collection("vessels");
+const vesselNames = database.collection("vesselNames");
 
 let app         = express();
 let server      = http.createServer(app);

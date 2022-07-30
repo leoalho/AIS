@@ -1,7 +1,9 @@
 var socket = io();
-import {parsers} from "./parsers.js";
+import {parseMessage} from "./parsers.js";
+
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
+
 const image = new Image();
 image.src = 'testikartta2.png';
 image.onload = ()=>{
@@ -11,29 +13,8 @@ image.onload = ()=>{
 }
 
 var vessels = [];
-var voyageMessages = [];
 
 const colors = {1: 'red', 2: 'red', 3: 'red', 4: 'blue', 5: 'red',8: 'green'};
-
-function toSixBits(char){
-	let bits = '000000';
-	let AsciiCode = char.charCodeAt(0)-48;
-	if (AsciiCode>40){
-		AsciiCode -= 8;
-	}
-	bits += AsciiCode.toString(2);
-	bits = bits.slice(-6);
-	return bits;
-}
-
-function toSixBitArray(message){
-	let sixBitMessage = '';
-	// console.log('Payload length: '+message.length); 
-	for (let i=0; i<message.length; i++){
-		sixBitMessage += toSixBits(message[i]);
-	}
-	return sixBitMessage;
-}
 
 function getPixels(vessel){
 	let pixels={};
@@ -57,7 +38,6 @@ function drawVessel(vessel){
 	ctx.stroke();
 }
 
-
 function drawAllVessels(){
 	ctx.lineWidth = 3;
 	ctx.drawImage(image,0,0);
@@ -80,46 +60,6 @@ function updateVessels(vessel){
 	}
 	vessels.push(vessel);
 }
-
-var multipartMessage = [];
-
-function parseMessage(message){
-	message = String(message);
-	let messageArray = message.split(',');
-	// console.log('Received AIS-message: ' + messageArray);
-	if (message.slice(0,2)!="!A" || messageArray.length==1){
-		return("Error parsing data, possibly not a proper NMEA AIS message.")
-	}
-	if (messageArray[1]>1){
-		if (messageArray[2]==1){
-			multipartMessage = messageArray;
-			console.log("Received first part of a multipart message ... awaiting next parts")
-		}else if (multipartMessage[3]==messageArray[3]){
-			messageArray[5] = multipartMessage[5] + messageArray[5];
-			// console.log(messageArray[5]);
-			multipartMessage = [];
-		}else{
-			console.log("Did not find earlier messages with same id")
-		}
-	}
-	let payload = messageArray[5];
-	let bitPayload = toSixBitArray(payload);
-	// console.log('Binary payload: '+bitPayload);
-	let type= parseInt(bitPayload.slice(0,6),2);
-	// console.log('Message type: '+type+' ('+messageType[type-1]+')');
-	if (!parsers[type]){
-		console.log('Message type not yet supported :(')
-	}else{
-		let parsedPayload = parsers[type](bitPayload);
-		parsedPayload.timeReceived = new Date().toUTCString();
-		updateVessels(parsedPayload);
-		// console.table(vessels);
-		console.log(vessels);
-		drawAllVessels();
-		return parsedPayload;
-	}
-		
-}	
 
 canvas.addEventListener("mousemove", function(e) { 
     var cRect = canvas.getBoundingClientRect();        // Gets CSS pos, and width/height
@@ -150,21 +90,10 @@ canvas.addEventListener("mousemove", function(e) {
 
 });
 
-/*function getMessage(){
-	let message = document.getElementById('message').value;
-
-	if (message != ""){
-
-		document.getElementById('decoded').innerText=JSON.stringify(parseMessage(message), null, '\t');
-	}
-	document.getElementById('message').value = '';
-}
-
-document.getElementById('submit').addEventListener('click', getMessage)
-*/
-
 socket.on('newMessage', (message)=>{
-	// document.getElementById('decoded').innerText=JSON.stringify(parseMessage(message), null, '\t')
-	parseMessage(message)
+	let vessel = parseMessage(message);
+	updateVessels(vessel);
+	console.log(vessels);
+	drawAllVessels();
 })
 
