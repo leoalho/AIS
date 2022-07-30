@@ -50,7 +50,7 @@ function parseToText(message){
 	for (let i=0; i<messageLength; i++){
 		sign += sixBitAscii[parseInt(message.slice(i*6,i*6+6),2)];
 	}
-	neatSign = sign.replace(/\s+/g, '');
+	let neatSign = sign.replace(/\s+/g, '');
 	return neatSign;
 }
 
