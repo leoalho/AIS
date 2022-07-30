@@ -5,6 +5,14 @@ const path      = require("path");
 const fs        = require("fs");
 const express   = require("express");
 const socketIO  = require("socket.io");
+const { MongoClient } = require("mongodb");
+
+const uri = "mongodb://localhost:27017";
+console.log("Connecting to database...");
+const client = new MongoClient(uri);
+console.log("Connected to database");
+const database = client.db('testi');
+const users = database.collection("users");
 
 let app         = express();
 let server      = http.createServer(app);
