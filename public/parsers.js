@@ -46,7 +46,7 @@ function rateOfTurn(value){
 
 function parseToText(message){
 	let sign = ""
-	messageLength = message.length/6;
+	let messageLength = message.length/6;
 	for (let i=0; i<messageLength; i++){
 		sign += sixBitAscii[parseInt(message.slice(i*6,i*6+6),2)];
 	}
