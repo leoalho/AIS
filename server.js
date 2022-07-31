@@ -10,6 +10,7 @@ const { MongoClient } = require("mongodb");
 const uri = "mongodb://localhost:27017";
 console.log("Connecting to database...");
 const client = new MongoClient(uri);
+client.connect();
 console.log("Connected to database");
 const database = client.db('AIS');
 const vessels = database.collection("vessels");
