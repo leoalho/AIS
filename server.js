@@ -20,10 +20,18 @@ let app         = express();
 let server      = http.createServer(app);
 let io          = socketIO(server);
 
+function addLeadingZeros(num, totalLength) {
+    return String(num).padStart(totalLength, '0');
+  }
+
 socket.on("message", (msg, rinfo) =>{
     io.emit("newMessage", msg.toString());
     console.log(msg.toString());
-    fs.appendFileSync("AIS.txt", msg);
+    let year = addLeadingZeros(new Date().getYear()-100,2);
+    let month = addLeadingZeros(new Date().getMonth()+1,2);
+    let date = addLeadingZeros(new Date().getDate(),2);
+    let fileName = "./AISdata/AIS-"+year+month+date+".txt";
+    fs.appendFileSync(fileName, msg);
 });
 
 socket.bind(3000, "127.0.0.1", () => {
