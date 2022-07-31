@@ -42,8 +42,10 @@ function updateVessels(vessel){
 
 socket.on('newMessage', (message)=>{
 	let vessel = parseMessage(message);
-	updateVessels(vessel);
-	console.log(vessels);
-	drawAllVessels();
+	if (vessel){
+		updateVessels(vessel);
+		console.log(vessels);
+		drawAllVessels();
+	}
 })
 

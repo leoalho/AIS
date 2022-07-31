@@ -183,18 +183,21 @@ export function parseMessage(message){
 	let messageArray = message.split(',');
 	// console.log('Received AIS-message: ' + messageArray);
 	if (message.slice(0,2)!="!A" || messageArray.length==1){
-		return("Error parsing data, possibly not a proper NMEA AIS message.")
+		console.log("Error parsing data, possibly not a proper NMEA AIS message.");
+		return;
 	}
 	if (messageArray[1]>1){
 		if (messageArray[2]==1){
 			multipartMessage = messageArray;
 			console.log("Received first part of a multipart message ... awaiting next parts")
+			return;
 		}else if (multipartMessage[3]==messageArray[3]){
 			messageArray[5] = multipartMessage[5] + messageArray[5];
 			// console.log(messageArray[5]);
 			multipartMessage = [];
 		}else{
 			console.log("Did not find earlier messages with same id")
+			return;
 		}
 	}
 	let payload = messageArray[5];
@@ -204,6 +207,7 @@ export function parseMessage(message){
 	// console.log('Message type: '+type+' ('+messageType[type-1]+')');
 	if (!parsers[type]){
 		console.log('Message type not yet supported :(')
+		return;
 	}else{
 		let parsedPayload = parsers[type](bitPayload);
 		parsedPayload.timeReceived = new Date().toUTCString();
