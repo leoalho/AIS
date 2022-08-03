@@ -27,7 +27,7 @@ function addLeadingZeros(num, totalLength) {
   }
 
 async function emitVessels(){
-    currentVessels = [];
+    let currentVessels = [];
     await vessels.find({timeReceived : {$gte : new Date().getTime()-(60000*10)}}).forEach(vessel =>{
         currentVessels.push(vessel);
     });
@@ -53,8 +53,6 @@ socket.on("message", (msg, rinfo) =>{
     if (vessel){
         updateVessel(vessel);
     }
-
-    //io.emit("newMessage", msg.toString());
     console.log(msg.toString());
     let year = addLeadingZeros(new Date().getYear()-100,2);
     let month = addLeadingZeros(new Date().getMonth()+1,2);
@@ -74,7 +72,15 @@ server.listen(8080, "127.0.0.1", () =>{
     console.log("HTTP server listening on port 8080");
 });
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
+    let currentVessels = [];
+    await vessels.find({timeReceived : {$gte : new Date().getTime()-(60000*10)}}).forEach(vessel =>{
+        currentVessels.push(vessel);
+    });
+    await weatherStations.find({timeReceived : {$gte : new Date().getTime()-(60000*10)}}).forEach(vessel =>{
+        currentVessels.push(vessel);
+    });
+    io.emit("newVessels", JSON.stringify(currentVessels));
     console.log("New Connection");
 })
 
