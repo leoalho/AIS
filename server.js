@@ -50,7 +50,9 @@ async function updateVessel(vessel){
 
 socket.on("message", (msg, rinfo) =>{
     let vessel = parseMessage(msg.toString());
-    updateVessel(vessel);
+    if (vessel){
+        updateVessel(vessel);
+    }
 
     //io.emit("newMessage", msg.toString());
     console.log(msg.toString());
