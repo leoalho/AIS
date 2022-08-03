@@ -1,5 +1,4 @@
 var socket = io();
-import {parseMessage} from "./parsers.js";
 
 // initialize Leaflet
 var map = L.map('map').setView({lon: 24.4391, lat: 60.050}, 10);
@@ -27,30 +26,8 @@ function drawAllVessels(){
 	})
 }
 
-function updateVessels(vessel){
-	for (let i=0; i<vessels.length; i++){
-		if (vessels[i].MMSI==vessel.MMSI){
-			let keys = Object.keys(vessel);
-			keys.forEach((key)=>{
-				vessels[i][key]=vessel[key];
-			});
-			return;
-		}
-	}
-	vessels.push(vessel);
-}
-
 socket.on('newVessels', (newVessels)=>{
 	vessels = JSON.parse(newVessels);
 	drawAllVessels();
-})
-
-socket.on('newMessage', (message)=>{
-	let vessel = parseMessage(message);
-	if (vessel){
-		updateVessels(vessel);
-		console.log(vessels);
-		drawAllVessels();
-	}
 })
 

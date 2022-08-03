@@ -16,6 +16,7 @@ console.log("Connected to database");
 const database = client.db('AIS');
 const vessels = database.collection("vessels");
 const vesselNames = database.collection("vesselNames");
+const weatherStations = database.collection("weatherStations");
 
 let app         = express();
 let server      = http.createServer(app);
@@ -30,15 +31,18 @@ async function emitVessels(){
     await vessels.find({timeReceived : {$gte : new Date().getTime()-(60000*10)}}).forEach(vessel =>{
         currentVessels.push(vessel);
     });
+    await weatherStations.find({timeReceived : {$gte : new Date().getTime()-(60000*10)}}).forEach(vessel =>{
+        currentVessels.push(vessel);
+    });
     io.emit("newVessels", JSON.stringify(currentVessels));
     console.log('emitting')
 }
 
-
-
 async function updateVessel(vessel){
     if (vessel.messageType==5){
         await vesselNames.updateOne({MMSI: vessel.MMSI},{$set: vessel},{ upsert: true });
+    }else if (vessel.messageType==8 && vessel.dac==1 && vessel.fid ==11){
+        await weatherStations.updateOne({stationId : vessel.stationId},{$set: vessel},{upsert: true});
     }else{
         await vessels.updateOne({MMSI: vessel.MMSI},{$set: vessel},{ upsert: true });
     }

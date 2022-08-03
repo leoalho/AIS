@@ -198,7 +198,14 @@ function parseBinaryBroadcast(payload){
 		report.precipitation = parseInt(payload.slice(332,335),2); //fix this
 		report.salinity = parseInt(payload.slice(335,344),2);
 		report.ice = parseInt(payload.slice(344,346),2); //fix this
-		// not yet full message
+
+		for (let i=0; i<weatherStation.length; i++){
+			let station = weatherStation[i];
+			if (vessel.lon>station.lon1 && vessel.lon<station.lon2 && vessel.lat>station.lat1 && vessel.lat<station.lat2){
+				report.stationId = station.id;
+				report.stationName = station.name;
+			}
+		}
 		return report;
 	}
 	//console.log("This type of binary broadcast not yet fully supported");
