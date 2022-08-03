@@ -11,6 +11,26 @@ const navStatus = ['Under way using engine','At anchor','Not under command','Res
 'Under way sailing','Reserved for future amendment of Navigational Status for HSC','Reserved for future amendment of Navigational Status for WIG','Reserved for future use',
 'Reserved for future use','Reserved for future use','AIS-SART is active','Not defined (default)'];
 
+const navaid = ["Default", "Type of Aid to Navigation not specified", "Reference point", 
+"RACON (radar transponder marking a navigation hazard)", "Fixed structure off shore", 
+"Spare, Reserved for future use.", "Light, without sectors", "Light, with sectors", "Leading Light Front", 
+"Leading Light Rear", "Beacon, Cardinal N", "Beacon, Cardinal E", "Beacon, Cardinal S", 
+"Beacon, Cardinal W", "Beacon, Port hand", "Beacon, Starboard hand", "Beacon, Preferred Channel port hand", 
+"Beacon, Preferred Channel starboard hand", "Beacon, Isolated danger", 
+"Beacon, Safe water", "Beacon, Special mark", "Cardinal Mark N", "Cardinal Mark E", "Cardinal Mark S", 
+"Cardinal Mark W", "Port hand Mark", "Starboard hand Mark", "Preferred Channel Port hand", 
+"Preferred Channel Starboard hand", "Isolated danger", "Safe Water", "Special Mark", "Light Vessel / LANBY / Rigs"
+];
+
+var weatherStation=[{id: 1, name: "Tulliniemi", lat1 : 59.8070, lat2: 59.8115, lon1: 22.9086, lon2: 22.9191, mentions: 0},
+					{id: 2, name: "Harmaja", lat1: 60.1037, lat2: 60.1065, lon1: 24.9703, lon2: 24.9770, mentions: 0},
+					{id: 3, name: "Orrengrund", lat1: 60.2721, lat2: 60.2764, lon1: 26.4350, lon2: 26.4471, mentions: 0},
+					{id: 4, name: "Rankki", lat1: 60.3649, lat2: 60.3802, lon1: 26.9440, lon2: 26.9750, mentions: 0},
+					{id: 5, name: "Haapasaari", lat1: 60.2852, lat2: 60.2916, lon1: 27.1814, lon2: 27.1978, mentions: 0},
+					{id: 6, name: "Tallinnamadala tuletorn", lat1: 59.7081, lat2: 59.7148, lon1: 24.7213, lon2: 24.7416, mentions: 0},
+					{id: 7, name: "Heltermaa", lat1: 58.8621, lat2: 58.8713, lon1: 23.0346, lon2: 23.0587, mentions: 0}
+					];
+
 const sixBitAscii = ['@','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','[','\\',']','^',
                     '_',' ','!','"','#','$','%','&','\'','(',')','*','+',',','-','.','/','0','1','2','3','4','5','6','7','8','9',':',';','<','=','>','?'];
 
@@ -151,21 +171,63 @@ function parseBinaryBroadcast(payload){
 		report.wgust = parseInt(payload.slice(128,135),2);
 		report.wdir = parseInt(payload.slice(135,144),2);
 		report.wgustdir = parseInt(payload.slice(144,153),2);
-		report.temperature = parseInt(payload.slice(153,164),2);
+		report.temperature = (parseInt(payload.slice(153,164),2)-600)/10;
 		report.humidity = parseInt(payload.slice(164,171),2);
 		report.dewpoint = parseInt(payload.slice(171,181),2);
 		report.pressure = parseInt(payload.slice(181,190),2);
-		report.pressuretend = parseInt(payload.slice(190,192),2);
+		report.pressuretend = parseInt(payload.slice(190,192),2); //add array
 		report.visibility = parseInt(payload.slice(192,200),2)/10;
 		report.waterlevel = parseInt(payload.slice(200,209),2); //fix this
-		report.leveltrend = parseInt(payload.slice(209,211),2);
+		report.leveltrend = parseInt(payload.slice(209,211),2); // add array
 		report.cspeed = parseInt(payload.slice(211,219),2);
 		report.cdir = parseInt(payload.slice(219,228),2);
 		report.cspeed2 = parseInt(payload.slice(228,236),2)/10;
+		report.cdir2 = parseInt(payload.slice(236,245),2);
+		report.cdepth2 = parseInt(payload.slice(245,250),2)/10;
+		report.cspeed3 = parseInt(payload.slice(250,258),2)/10;
+		report.cdir3 = parseInt(payload.slice(258,267),2)/10;
+		report.cdepth3 = parseInt(payload.slice(267,272),2)/10;
+		report.waveHeight = parseInt(payload.slice(272,280),2)/10;
+		report.wavePeriod = parseInt(payload.slice(280,286),2);
+		report.waveDirection = parseInt(payload.slice(286,295),2);
+		report.swellHeight = parseInt(payload.slice(295,303),2)/10;
+		report.swellPeriod = parseInt(payload.slice(303,309),2);
+		report.swellDir = parseInt(payload.slice(309,318),2);
+		report.seaState = parseInt(payload.slice(318,322),2); //fix this
+		report.waterTemp = (parseInt(payload.slice(322,332),2)-100)/10;
+		report.precipitation = parseInt(payload.slice(332,335),2); //fix this
+		report.salinity = parseInt(payload.slice(335,344),2);
+		report.ice = parseInt(payload.slice(344,346),2); //fix this
 		// not yet full message
 		return report;
 	}
 	console.log("This type of binary broadcast not yet fully supported");
+}
+
+function parseAidToNavigation(payload){
+	let report = {};
+    report.messageType = parseInt(message.slice(0,6),2);
+	report.messageType1 = messageType[parseInt(message.slice(0,6),2)-1];
+	report.MMSI = parseInt(message.slice(8,38),2);
+	report.aidType = parseInt(message.slice(38,43),2);
+	report.name = parseToText(payload.slice(43,163));
+	report.accuracy  = parseInt(message.slice(163,164),2);
+	report.lon = getCoord(message.slice(164,192));
+	report.lat = getCoord(message.slice(192,219));
+	report.to_bow = parseInt(payload.slice(219,228),2);
+	report.to_stern = parseInt(payload.slice(228,237),2);
+	report.to_port = parseInt(payload.slice(237,243),2);
+	report.to_starboard = parseInt(payload.slice(243,249),2);
+	report.epfd = parseInt(payload.slice(249,253),2); //fix
+	report.second = parseInt(payload.slice(253,259),2);
+	report.off_position = parseInt(payload.slice(259,260),2);
+	report.regional = parseInt(payload.slice(260,268),2);
+	report.raim = parseInt(payload.slice(268,269),2);
+	report.virtual_aid = parseInt(payload.slice(269,270),2);
+	report.assigned = parseInt(payload.slice(270,271),2);
+	report.spare = parseInt(payload.slice(271,272),2);
+	report.nameExtension = parseInt(payload.slice(272,360),2);
+	return report;
 }
 
 var parsers = {1: parsePositionReport,
@@ -173,7 +235,8 @@ var parsers = {1: parsePositionReport,
 	3: parsePositionReport,
 	4: parseBaseStationReport,
 	5: parseVoyageRelatedData,
-	8: parseBinaryBroadcast
+	8: parseBinaryBroadcast,
+	21: parseAidToNavigation
 };
 
 var multipartMessage = [];
