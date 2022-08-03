@@ -1,5 +1,5 @@
 var socket = io();
-
+import {icons} from './icons.js';
 // initialize Leaflet
 var map = L.map('map').setView({lon: 24.4391, lat: 60.050}, 10);
 
@@ -20,7 +20,12 @@ function drawAllVessels(){
 	markersLayer.clearLayers();
 	vessels.forEach(vessel => {
 		let popup = L.popup().setContent(JSON.stringify(vessel,null,"<br>"));
-		let marker = L.marker({lon: vessel.lon, lat: vessel.lat}).bindPopup(popup);
+		let marker;
+		if (icons[vessel.messageType]){
+			marker = L.marker({lon: vessel.lon, lat: vessel.lat}, {icon: icons[vessel.messageType]}).bindPopup(popup);
+		}else{
+			marker = L.marker({lon: vessel.lon, lat: vessel.lat}).bindPopup(popup);
+		}
 		marker.bindPopup(popup);
 		markersLayer.addLayer(marker); 
 	})

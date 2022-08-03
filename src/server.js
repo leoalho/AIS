@@ -57,7 +57,7 @@ socket.on("message", (msg, rinfo) =>{
     let year = addLeadingZeros(new Date().getYear()-100,2);
     let month = addLeadingZeros(new Date().getMonth()+1,2);
     let date = addLeadingZeros(new Date().getDate(),2);
-    let fileName = "./AISdata/AIS-"+year+month+date+".txt";
+    let fileName = "../AISdata/AIS-"+year+month+date+".txt";
     fs.appendFileSync(fileName, msg);
 });
 
@@ -65,7 +65,7 @@ socket.bind(3000, "127.0.0.1", () => {
     console.log("TCP socket formed on port 3000");
 });
 
-const publicPath    = path.join(__dirname, "./public");
+const publicPath    = path.join(__dirname, "../public");
 app.use(express.static(publicPath));
 
 server.listen(8080, "127.0.0.1", () =>{
