@@ -10,7 +10,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 // show the scale bar on the lower left corner
-L.control.scale({imperial: true, metric: true}).addTo(map);
+L.control.scale({metric: true}).addTo(map);
 
 var vessels = [];
 var markersLayer = new L.LayerGroup();
