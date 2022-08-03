@@ -38,7 +38,7 @@ function weatherReport(vessel){
                     + "10-min top wind speed: "+vessel.wgust+" knots <br>"
                     + "Wind direction: "+vessel.wdir+" °<br>"
                     + "Air pressure: "+vessel.pressure+ " hPa<br>"
-                    + "Sea state: "+vessel.seaState+"<br>"
+                    //+ "Sea state: "+vessel.seaState+"<br>"
                     //+ "Water temperature: "+vessel.waterTemp+"<br>"
                     //+ "Wave height: "+vessel.waveHeight+ " m<br>"
                     + "Precipitation: "+ vessel.precipitation+"<br>"
