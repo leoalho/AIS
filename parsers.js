@@ -279,7 +279,7 @@ function parseMessage(message){
 	}else{
 		let parsedPayload = parsers[type](bitPayload);
 		//console.log(parsedPayload);
-		parsedPayload.timeReceived = new Date().toUTCString();
+		parsedPayload.timeReceived = new Date().getTime();
 		return parsedPayload;
 	}	
 }

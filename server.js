@@ -6,6 +6,7 @@ const fs        = require("fs");
 const express   = require("express");
 const socketIO  = require("socket.io");
 const { MongoClient } = require("mongodb");
+const {parseMessage} = require("./parsers.js");
 
 const uri = "mongodb://localhost:27017";
 console.log("Connecting to database...");
@@ -24,8 +25,30 @@ function addLeadingZeros(num, totalLength) {
     return String(num).padStart(totalLength, '0');
   }
 
+async function emitVessels(){
+    currentVessels = [];
+    await vessels.find({timeReceived : {$gte : new Date().getTime()-(60000*10)}}).forEach(vessel =>{
+        currentVessels.push(vessel);
+    });
+    io.emit("newVessels", JSON.stringify(currentVessels));
+    console.log('emitting')
+}
+
+
+
+async function updateVessel(vessel){
+    if (vessel.messageType==5){
+        await vesselNames.updateOne({MMSI: vessel.MMSI},{$set: vessel},{ upsert: true });
+    }else{
+        await vessels.updateOne({MMSI: vessel.MMSI},{$set: vessel},{ upsert: true });
+    }
+}
+
 socket.on("message", (msg, rinfo) =>{
-    io.emit("newMessage", msg.toString());
+    let vessel = parseMessage(msg.toString());
+    updateVessel(vessel);
+
+    //io.emit("newMessage", msg.toString());
     console.log(msg.toString());
     let year = addLeadingZeros(new Date().getYear()-100,2);
     let month = addLeadingZeros(new Date().getMonth()+1,2);
@@ -49,5 +72,6 @@ io.on("connection", (socket) => {
     console.log("New Connection");
 })
 
+setInterval(emitVessels,30000);
 
 

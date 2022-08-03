@@ -40,6 +40,11 @@ function updateVessels(vessel){
 	vessels.push(vessel);
 }
 
+socket.on('newVessels', (newVessels)=>{
+	vessels = JSON.parse(newVessels);
+	drawAllVessels();
+})
+
 socket.on('newMessage', (message)=>{
 	let vessel = parseMessage(message);
 	if (vessel){
