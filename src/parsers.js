@@ -22,6 +22,14 @@ const navAid = ["Default", "Type of Aid to Navigation not specified", "Reference
 "Preferred Channel Starboard hand", "Isolated danger", "Safe Water", "Special Mark", "Light Vessel / LANBY / Rigs"
 ];
 
+const epfd = ["GPS", "GLONASS", "Combined GPS/GLONASS", "Loran-C", "Chayka", "Integrated navigation system", "Surveyed", "Galileo"];
+
+const beaufort1 = ["Calm", "Light air", "Light breeze", "Gentle breeze", "Moderate breeze", "Fresh breeze", "Strong breeze", "High wind", "Gale", "Strong gale", "Storm", "Violent storm", "Hurricane force"];
+
+const beaufort2 = ["Flat", "Ripples without crests", "Small wavelets. Crests of glassy appearance, not breaking", "Large wavelets. Crests begin to break; scattered whitecaps", "Small waves", "Moderate (1.2 m) longer waves. Some foam and spray", "Large waves with foam crests and some spray", "Sea heaps up and foam begins to streak", "Moderately high waves with breaking crests forming spindrift. Streaks of foam", "High waves (6-7 m) with dense foam. Wave crests start to roll over. Considerable spray", "Very high waves. The sea surface is white and there is considerable tumbling. Visibility is reduced", "Exceptionally high waves", "Huge waves. Air filled with foam and spray. Sea completely white with driving spray. Visibility greatly reduced"]
+
+const precipitation = ["N/A", "Rain", "Thunderstorm", "Freezing rain", "Mixed/ice", "Snow", "N/A", "N/A (default)"];
+
 const weatherStation=[{id: 1, name: "Tulliniemi", lat1 : 59.8070, lat2: 59.8115, lon1: 22.9086, lon2: 22.9191, mentions: 0},
 					{id: 2, name: "Harmaja", lat1: 60.1037, lat2: 60.1065, lon1: 24.9703, lon2: 24.9770, mentions: 0},
 					{id: 3, name: "Orrengrund", lat1: 60.2721, lat2: 60.2764, lon1: 26.4350, lon2: 26.4471, mentions: 0},
@@ -76,8 +84,8 @@ function getCoord(coord){
 
 function rateOfTurn(value){
 	let rot = parseInt(value.slice(1),2);
-	//rot = rot/4.733;
-	//rot = rot*rot;
+	rot = rot/4.733;
+	rot = rot*rot;
 	if (parseInt(value[0])==1){
 		rot -= 128;;
 	}
@@ -91,6 +99,7 @@ function parseToText(message){
 		sign += sixBitAscii[parseInt(message.slice(i*6,i*6+6),2)];
 	}
 	let neatSign = sign.replace(/\s+/g, '');
+	neatSign = neatSign.replaceAll('@','');
 	return neatSign;
 }
 
@@ -125,7 +134,7 @@ function parseBaseStationReport(payload){
 	report.accuracy = parseInt(payload.slice(78,79),2);
 	report.lon = getCoord(payload.slice(79,107));
 	report.lat = getCoord(payload.slice(107,134));
-	report.epfd = parseInt(payload.slice(134,138),2);
+	report.epfd = epfd[parseInt(payload.slice(134,138),2)];
 	return report;
 }
 
@@ -143,7 +152,7 @@ function parseVoyageRelatedData(payload){
 	report.to_stern = parseInt(payload.slice(249,258),2);
 	report.to_port = parseInt(payload.slice(258,264),2);
 	report.to_starboard = parseInt(payload.slice(264,270),2);
-	report.epfd = parseInt(payload.slice(270,274),2);
+	report.epfd = epfd[parseInt(payload.slice(270,274),2)];
 	report.ETAmonth = parseInt(payload.slice(274,278),2);
 	report.ETAday = parseInt(payload.slice(278,283),2);
 	report.ETAhour = parseInt(payload.slice(283,288),2);
@@ -174,8 +183,8 @@ function parseBinaryBroadcast(payload){
 		report.temperature = (parseInt(payload.slice(153,164),2)-600)/10;
 		report.humidity = parseInt(payload.slice(164,171),2);
 		report.dewpoint = parseInt(payload.slice(171,181),2);
-		report.pressure = parseInt(payload.slice(181,190),2);
-		report.pressuretend = parseInt(payload.slice(190,192),2); //add array
+		report.pressure = parseInt(payload.slice(181,190),2)+800;
+		report.pressureTrend = parseInt(payload.slice(190,192),2); //add array
 		report.visibility = parseInt(payload.slice(192,200),2)/10;
 		report.waterlevel = parseInt(payload.slice(200,209),2); //fix this
 		report.leveltrend = parseInt(payload.slice(209,211),2); // add array
@@ -193,9 +202,10 @@ function parseBinaryBroadcast(payload){
 		report.swellHeight = parseInt(payload.slice(295,303),2)/10;
 		report.swellPeriod = parseInt(payload.slice(303,309),2);
 		report.swellDir = parseInt(payload.slice(309,318),2);
-		report.seaState = parseInt(payload.slice(318,322),2); //fix this
+		let seaState = parseInt(payload.slice(318,322),2);
+		report.seaState =  beaufort1+" ("+beaufort2+")";
 		report.waterTemp = (parseInt(payload.slice(322,332),2)-100)/10;
-		report.precipitation = parseInt(payload.slice(332,335),2); //fix this
+		report.precipitation = precipitation[parseInt(payload.slice(332,335),2)]; //fix this
 		report.salinity = parseInt(payload.slice(335,344),2);
 		report.ice = parseInt(payload.slice(344,346),2); //fix this
 
@@ -226,16 +236,16 @@ function parseAidToNavigation(payload){
 	report.to_stern = parseInt(payload.slice(228,237),2);
 	report.to_port = parseInt(payload.slice(237,243),2);
 	report.to_starboard = parseInt(payload.slice(243,249),2);
-	report.epfd = parseInt(payload.slice(249,253),2); //fix
+	report.epfd = epfd[parseInt(payload.slice(249,253),2)];
 	report.second = parseInt(payload.slice(253,259),2);
 	report.off_position = parseInt(payload.slice(259,260),2);
 	report.regional = parseInt(payload.slice(260,268),2);
-	report.raim = parseInt(payload.slice(268,269),2);
+	report.raim= parseInt(payload.slice(268,269),2);
 	report.virtual_aid = parseInt(payload.slice(269,270),2);
 	report.assigned = parseInt(payload.slice(270,271),2);
 	report.spare = parseInt(payload.slice(271,272),2);
 	report.nameExtension = parseInt(payload.slice(272,360),2);
-	if (report.name.charAt(report.name.length-1)!='@'){
+	if (report.name.length==20){
 		report.name = report.name+report.nameExtension;
 	}
 	return report;
