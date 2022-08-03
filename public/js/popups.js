@@ -39,8 +39,8 @@ function weatherReport(vessel){
                     + "Wind direction: "+vessel.wdir+" °<br>"
                     + "Air pressure: "+vessel.pressure+ " hPa<br>"
                     + "Sea state: "+vessel.seaState+"<br>"
-                    + "Water temperature: "+vessel.waterTemp+"<br>"
-                    + "Wave height: "+vessel.waveHeight+ " m<br>"
+                    //+ "Water temperature: "+vessel.waterTemp+"<br>"
+                    //+ "Wave height: "+vessel.waveHeight+ " m<br>"
                     + "Precipitation: "+ vessel.precipitation+"<br>"
                     +"Time Received: "+new Date(vessel.timeReceived).toUTCString();
     return popupText;

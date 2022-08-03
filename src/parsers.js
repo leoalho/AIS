@@ -203,7 +203,7 @@ function parseBinaryBroadcast(payload){
 		report.swellPeriod = parseInt(payload.slice(303,309),2);
 		report.swellDir = parseInt(payload.slice(309,318),2);
 		let seaState = parseInt(payload.slice(318,322),2);
-		report.seaState =  beaufort1+" ("+beaufort2+")";
+		report.seaState =  beaufort1[seaState]+" ("+beaufort2[seaState]+")";
 		report.waterTemp = (parseInt(payload.slice(322,332),2)-100)/10;
 		report.precipitation = precipitation[parseInt(payload.slice(332,335),2)]; //fix this
 		report.salinity = parseInt(payload.slice(335,344),2);
