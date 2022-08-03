@@ -201,7 +201,7 @@ function parseBinaryBroadcast(payload){
 
 		for (let i=0; i<weatherStation.length; i++){
 			let station = weatherStation[i];
-			if (vessel.lon>station.lon1 && vessel.lon<station.lon2 && vessel.lat>station.lat1 && vessel.lat<station.lat2){
+			if (report.lon>station.lon1 && report.lon<station.lon2 && report.lat>station.lat1 && report.lat<station.lat2){
 				report.stationId = station.id;
 				report.stationName = station.name;
 			}
