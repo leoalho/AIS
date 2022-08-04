@@ -75,6 +75,7 @@ server.listen(8080, "127.0.0.1", () =>{
 io.on("connection", async (socket) => {
     let currentVessels = [];
     await vessels.find({timeReceived : {$gte : new Date().getTime()-(60000*10)}}).forEach(vessel =>{
+        //let extraData = await vesselNames.findOne({MMSI: vessel.MMSI});
         currentVessels.push(vessel);
     });
     await weatherStations.find({timeReceived : {$gte : new Date().getTime()-(60000*10)}}).forEach(vessel =>{

@@ -1,5 +1,6 @@
 var socket = io();
 import {icons} from './icons.js';
+//import { RotatedMarker} from './rotatedMarker.js';
 import {createPopup} from './popups.js';
 // initialize Leaflet
 var map = L.map('map').setView({lon: 24.4391, lat: 60.050}, 10);
@@ -21,12 +22,17 @@ function drawAllVessels(){
 	markersLayer.clearLayers();
 	vessels.forEach(vessel => {
 		let popup = createPopup(vessel);
-
+		let rotation = 0;
+		if (vessel.HDG){
+			rotation = vessel.HDG;
+		}
 		let marker;
 		if (icons[vessel.messageType]){
-			marker = L.marker({lon: vessel.lon, lat: vessel.lat}, {icon: icons[vessel.messageType]});
+			marker = L.rotatedMarker({lon: vessel.lon, lat: vessel.lat}, {icon: icons[vessel.messageType], rotationAngle: rotation,
+				rotationOrigin: "center"});
 		}else{
-			marker = L.marker({lon: vessel.lon, lat: vessel.lat});
+			marker = L.rotatedMarker({lon: vessel.lon, lat: vessel.lat}, {rotationAngle: rotation,
+				rotationOrigin: "center"});
 		}
 		
 		marker.bindPopup(popup);
