@@ -1,0 +1,12 @@
+# AIS
+
+A simple web application that can receive and display AIS messages written in nodejs.
+The backend is located in the ./src directory and the frontend in the ./public directory.
+
+To run the server. Run
+
+The server is implemented with express and socket.io.
+
+## Running the application
+
+### Environmental variables
