@@ -5,7 +5,6 @@ const path = require("path");
 const fs = require("fs");
 const express = require("express");
 const socketIO = require("socket.io");
-const { MongoClient } = require("mongodb");
 const { parseMessage } = require("./parsers.js");
 const {
   createDbConnection,
@@ -13,17 +12,7 @@ const {
   getPositionReports,
 } = require("./database.js");
 
-const uri = "mongodb://localhost:27017";
-console.log("Connecting to database...");
-const client = new MongoClient(uri);
-client.connect();
-console.log("Connected to database");
 const db = createDbConnection();
-const database = client.db("AIS");
-const vessels = database.collection("vessels");
-const vesselNames = database.collection("vesselNames");
-const weatherStations = database.collection("weatherStations");
-
 let app = express();
 let server = http.createServer(app);
 let io = socketIO(server);
@@ -59,13 +48,9 @@ async function updateVessel(vessel) {
       { $set: vessel },
       { upsert: true }
     );
-  } else {
-    await updatePositionReport(db, vessel);
-    await vessels.updateOne(
-      { MMSI: vessel.MMSI },
-      { $set: vessel },
-      { upsert: true }
-    );
+  } else if (vessel.$messageType === 4) {
+  } else if (vessel.$messageType <= 3) {
+    updatePositionReport(db, vessel);
   }
 }
 

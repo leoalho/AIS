@@ -1,7 +1,7 @@
 const sqlite3 = require("sqlite3").verbose();
 const fs = require("fs");
 const path = require("path");
-const filepath = path.resolve("vesselData.db");
+const filepath = path.join("../vesselData.db");
 console.log(filepath);
 const sql_init = require("./sql_init");
 const sql = require("./sql");
@@ -28,7 +28,7 @@ const createDbConnection = () => {
   return db;
 };
 
-const updatePositionReport = async (db, message) => {
+const updatePositionReport = (db, message) => {
   const data = {
     $MMSI: message.MMSI,
     $messageType: message.messageType,
@@ -43,7 +43,7 @@ const updatePositionReport = async (db, message) => {
     $timestamp: message.timeStamp,
     $timeReceived: message.timeReceived,
   };
-  await db.run(sql.updatePositionReport, data, function (err) {
+  db.run(sql.updatePositionReport, data, function (err) {
     if (err) {
       return console.error(err.message);
     }
