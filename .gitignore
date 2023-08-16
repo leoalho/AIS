@@ -1,8 +1,10 @@
 AIS.txt
 node_modules
-UDPclient.js
 reader.js
 todo.txt
 AISdata
 extra.txt
 testikartta2.png
+sqlite3.exe
+vesselData.db
+.env
