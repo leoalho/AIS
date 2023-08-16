@@ -3,12 +3,12 @@ INSERT INTO vessels (
     MMSI, messageType, callSign, shipname, shipType,
     to_bow, to_stern, to_port, to_starboard, epfd,
     ETAmonth, ETAday, ETAhour, ETAminute, draught,
-    destination, dte
+    destination, dte, $timeReceived
   ) VALUES (
     $MMSI, $messageType, $callSign, $shipname, $shipType,
     $to_bow, $to_stern, $to_port, $to_starboard, $epfd,
     $ETAmonth, $ETAday, $ETAhour, $ETAminute, $draught,
-    $destination, $dte
+    $destination, $dte, timeReceived
   )
   ON CONFLICT (MMSI)
   DO UPDATE SET
@@ -27,7 +27,8 @@ INSERT INTO vessels (
     ETAminute = excluded.ETAminute,
     draught = excluded.draught,
     destination = excluded.destination,
-    dte = excluded.dte;
+    dte = excluded.dte
+    timeReceived = excluded.timeReceived;
 `;
 
 exports.updatePositionReport = `
@@ -47,10 +48,10 @@ timestamp = excluded.timestamp,
 timeReceived = excluded.timeReceived
 ;`;
 
-exports.updatebaseStation = `
-INSERT INTO baseStationReports (MMSI,
-messageType, year, month, day, hour, minute, second, accuracy, lon, lat, epfd)
-VALUES ($MMSI, $messageType, $year, $month, $day, $hour, $minute, $second, $accuracy, $lon, $lat, $epfd)
+exports.updateBaseStation = `
+INSERT INTO baseStationReports (
+MMSI, messageType, year, month, day, hour, minute, second, accuracy, lon, lat, epfd, timeReceived)
+VALUES ($MMSI, $messageType, $year, $month, $day, $hour, $minute, $second, $accuracy, $lon, $lat, $epfd, $timeReceived)
 ON CONFLICT(MMSI) DO UPDATE SET
 messageType = excluded.messageType,
 year = excluded.year,
@@ -62,21 +63,22 @@ second = excluded.second,
 accuracy = excluded.accuracy,
 lon = excluded.lon,
 lat = excluded.lat,
-epfd = excluded.epfd;`;
+epfd = excluded.epfd,
+timeReceived = excluded.timeReceived;`;
 
-exports.updateWeatherStation = `
+exports.updateWeatherBroadcast = `
 INSERT INTO weatherBroadcasts (
     MMSI, messageType, dav, fid, lat,
     lon, day, hour, minute, temperature,
     wspeed, wgust, wdir, wgustdir,
     humidity, dewpoint, pressure, pressureTrend,
-    visibility, seaState, stationId, stationName
+    visibility, seaState, stationId, stationName, timeReceived
   ) VALUES (
     $MMSI, $messageType, $dav, $fid, $lat,
     $lon, $day, $hour, $minute, $temperature,
     $wspeed, $wgust, $wdir, $wgustdir,
     $humidity, $dewpoint, $pressure, $pressureTrend,
-    $visibility, $seaState, $stationId, $stationName
+    $visibility, $seaState, $stationId, $stationName, $timeReceived
   )
   ON CONFLICT (MMSI)
   DO UPDATE SET
@@ -100,20 +102,21 @@ INSERT INTO weatherBroadcasts (
     visibility = excluded.visibility,
     seaState = excluded.seaState,
     stationId = excluded.stationId,
-    stationName = excluded.stationName;
+    stationName = excluded.stationName
+    timeReceived = excluded.timeReceived;
   `;
 
-exports.updateBuoyTable = `
+exports.updateBuoy = `
 INSERT INTO buoys (
     MMSI, messageType, aidType, name, accuracy,
     lat, lon, to_bow, to_stern, to_port,
     to_starboard, epfd, second, off_position,
-    regional, raim, virtual_aid, assigned, spare
+    regional, raim, virtual_aid, assigned, spare, timeReceived
   ) VALUES (
     $MMSI, $messageType, $aidType, $name, $accuracy,
     $lat, $lon, $to_bow, $to_stern, $to_port,
     $to_starboard, $epfd, $second, $off_position,
-    $regional, $raim, $virtual_aid, $assigned, $spare
+    $regional, $raim, $virtual_aid, $assigned, $spare, $timeReceived
   )
   ON CONFLICT (MMSI)
   DO UPDATE SET
@@ -134,11 +137,15 @@ INSERT INTO buoys (
     raim = excluded.raim,
     virtual_aid = excluded.virtual_aid,
     assigned = excluded.assigned,
-    spare = excluded.spare;
+    spare = excluded.spare
+    timeReceived = excluded.timeReceived;
   `;
 
 exports.getPositionReports = `
-SELECT * FROM positionReports
-WHERE timeReceived > $time;`;
+SELECT positionReports.*, vessels.shipName, vessels.callSign FROM positionReports
+LEFT JOIN vessels ON positionReports.MMSI=vessels.MMSI
+WHERE positionReports.timeReceived > $time;`;
 
-exports.getAllWeatherStations = "SELECT * FROM weatherStations;";
+exports.getBaseStations = "SELECT * FROM baseStationReports;";
+exports.getWeatherStations = "SELECT * FROM weatherBroadcasts;";
+exports.getBuoys = "SELECT * FROM buoys;";

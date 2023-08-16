@@ -8,7 +8,7 @@ var testmessages = [
   "!AIVDM,1,1,,A,402<Hk1vIu1IS1hjk@RKhaO0249T,0*43",
 ];
 
-const buf1 = Buffer.from(testmessages[2]);
+const buf1 = Buffer.from(testmessages[process.argv[2] ? process.argv[2] : 1]);
 const buf2 = Buffer.from("bytes");
 const client = dgram.createSocket("udp4");
 client.send(buf1, 3000, "127.0.0.1", (err) => {

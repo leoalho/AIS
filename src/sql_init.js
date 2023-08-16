@@ -17,7 +17,8 @@ CREATE TABLE vessels
   ETAminute INTEGER,
   draught INTEGER,
   destination TEXT,
-  dte INTEGER
+  dte INTEGER,
+  timeReceived INTEGER
 );`;
 
 exports.createPositionReportTable = `
@@ -51,7 +52,8 @@ CREATE TABLE baseStationReports
   accuracy INTEGER,
   lon REAL,
   lat REAL,
-  epfd TEXT
+  epfd TEXT,
+  timeReceived INTEGER
 )`;
 
 exports.createWeatherBroadcastsTable = `
@@ -78,7 +80,8 @@ CREATE TABLE weatherBroadcasts
   visibility INTEGER,
   seaState TEXT,
   stationId TEXT,
-  stationName TEXT
+  stationName TEXT,
+  timeReceived INTEGER
 );`;
 
 exports.createBuoyTable = `
@@ -102,5 +105,6 @@ CREATE TABLE buoys
   raim INTEGER,
   virtual_aid INTEGER,
   assigned INTEGER,
-  spare INTEGER
+  spare INTEGER,
+  timeReceived INTEGER
 );`;

@@ -1,8 +1,9 @@
 const sqlite3 = require("sqlite3").verbose();
 const fs = require("fs");
 const path = require("path");
-const filepath = path.join("../vesselData.db");
-console.log(filepath);
+const { DB_NAME } = require("./config.js");
+
+const filepath = path.join(__dirname, `../${DB_NAME}`);
 const sql_init = require("./sql_init");
 const sql = require("./sql");
 
@@ -29,21 +30,39 @@ const createDbConnection = () => {
 };
 
 const updatePositionReport = (db, message) => {
-  const data = {
-    $MMSI: message.MMSI,
-    $messageType: message.messageType,
-    $navStatus: message.$navStatus,
-    $ROT: message.ROT,
-    $SOG: message.SOG,
-    $accuracy: message.accuracy,
-    $lon: message.lon,
-    $lat: message.lat,
-    $COG: message.COG,
-    $HDG: message.HDG,
-    $timestamp: message.timeStamp,
-    $timeReceived: message.timeReceived,
-  };
-  db.run(sql.updatePositionReport, data, function (err) {
+  db.run(sql.updatePositionReport, message, function (err) {
+    if (err) {
+      return console.error(err.message);
+    }
+  });
+};
+
+const updateWeatherBroadcast = (db, message) => {
+  db.run(sql.updateWeatherBroadcast, message, function (err) {
+    if (err) {
+      return console.error(err.message);
+    }
+  });
+};
+
+const updateBaseStation = (db, message) => {
+  db.run(sql.updateBaseStation, message, function (err) {
+    if (err) {
+      return console.error(err.message);
+    }
+  });
+};
+
+const updateVessel = (db, message) => {
+  db.run(sql.updateVessel, message, function (err) {
+    if (err) {
+      return console.error(err.message);
+    }
+  });
+};
+
+const updateBuoy = (db, message) => {
+  db.run(sql.updateBuoy, message, function (err) {
     if (err) {
       return console.error(err.message);
     }
@@ -59,15 +78,69 @@ const getPositionReports = async (db) => {
         if (err) {
           return reject(err);
         }
-        console.log(rows);
         return resolve(rows);
       }
     );
   });
 };
 
+const getBaseStations = async (db) => {
+  return new Promise((resolve, reject) => {
+    db.all(sql.getBaseStations, (err, rows) => {
+      if (err) {
+        return reject(err);
+      }
+      return resolve(rows);
+    });
+  });
+};
+
+const getWeatherReports = async (db) => {
+  return new Promise((resolve, reject) => {
+    db.all(sql.getWeatherStations, (err, rows) => {
+      if (err) {
+        return reject(err);
+      }
+      return resolve(rows);
+    });
+  });
+};
+
+const getBuoys = async (db) => {
+  return new Promise((resolve, reject) => {
+    db.all(sql.getBuoys, (err, rows) => {
+      if (err) {
+        return reject(err);
+      }
+      return resolve(rows);
+    });
+  });
+};
+
+const getAllVessels = async (db) => {
+  const currentVessels = [];
+
+  let positionReports = await getPositionReports(db);
+  positionReports.forEach((report) => currentVessels.push(report));
+
+  let baseStations = await getBaseStations(db);
+  baseStations.forEach((report) => currentVessels.push(report));
+
+  let weatherReports = await getWeatherReports(db);
+  weatherReports.forEach((report) => currentVessels.push(report));
+
+  let buoys = await getBuoys(db);
+  buoys.forEach((report) => currentVessels.push(report));
+
+  return currentVessels;
+};
+
 module.exports = {
   createDbConnection,
   updatePositionReport,
-  getPositionReports,
+  updateWeatherBroadcast,
+  updateBaseStation,
+  updateBuoy,
+  updateVessel,
+  getAllVessels,
 };
