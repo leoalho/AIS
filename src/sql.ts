@@ -1,4 +1,4 @@
-exports.updateVessels = `
+export const updateVessel = `
 INSERT INTO vessels (
     MMSI, messageType, callSign, shipname, shipType,
     to_bow, to_stern, to_port, to_starboard, epfd,
@@ -31,7 +31,7 @@ INSERT INTO vessels (
     timeReceived = excluded.timeReceived;
 `;
 
-exports.updatePositionReport = `
+export const updatePositionReport = `
 INSERT INTO positionReports(MMSI, messageType, navStatus, ROT, SOG, accuracy, lon, lat, COG, HDG, timestamp, timeReceived)
 VALUES($MMSI, $messageType, $navStatus, $ROT, $SOG, $accuracy, $lon, $lat, $COG, $HDG, $timestamp, $timeReceived)
 ON CONFLICT(MMSI) DO UPDATE SET
@@ -48,7 +48,7 @@ timestamp = excluded.timestamp,
 timeReceived = excluded.timeReceived
 ;`;
 
-exports.updateBaseStation = `
+export const updateBaseStation = `
 INSERT INTO baseStationReports (
 MMSI, messageType, year, month, day, hour, minute, second, accuracy, lon, lat, epfd, timeReceived)
 VALUES ($MMSI, $messageType, $year, $month, $day, $hour, $minute, $second, $accuracy, $lon, $lat, $epfd, $timeReceived)
@@ -66,7 +66,7 @@ lat = excluded.lat,
 epfd = excluded.epfd,
 timeReceived = excluded.timeReceived;`;
 
-exports.updateWeatherBroadcast = `
+export const updateWeatherBroadcast = `
 INSERT INTO weatherBroadcasts (
     MMSI, messageType, dav, fid, lat,
     lon, day, hour, minute, temperature,
@@ -106,7 +106,7 @@ INSERT INTO weatherBroadcasts (
     timeReceived = excluded.timeReceived;
   `;
 
-exports.updateBuoy = `
+export const updateBuoy = `
 INSERT INTO buoys (
     MMSI, messageType, aidType, name, accuracy,
     lat, lon, to_bow, to_stern, to_port,
@@ -141,11 +141,12 @@ INSERT INTO buoys (
     timeReceived = excluded.timeReceived;
   `;
 
-exports.getPositionReports = `
+export const getPositionReports = `
 SELECT positionReports.*, vessels.shipName, vessels.callSign FROM positionReports
 LEFT JOIN vessels ON positionReports.MMSI=vessels.MMSI
 WHERE positionReports.timeReceived > $time;`;
 
-exports.getBaseStations = "SELECT * FROM baseStationReports;";
-exports.getWeatherStations = "SELECT * FROM weatherBroadcasts;";
-exports.getBuoys = "SELECT * FROM buoys;";
+export const getBaseStations =
+  "SELECT * FROM baseStationReports WHERE timeReceived > $time;";
+export const getWeatherStations = "SELECT * FROM weatherBroadcasts;";
+export const getBuoys = "SELECT * FROM buoys;";
