@@ -1,4 +1,4 @@
-exports.createVesselTable = `
+export const createVesselTable = `
 CREATE TABLE vessels
 (
   MMSI INTEGER PRIMARY KEY,
@@ -21,7 +21,7 @@ CREATE TABLE vessels
   timeReceived INTEGER
 );`;
 
-exports.createPositionReportTable = `
+export const createPositionReportTable = `
 CREATE TABLE positionReports
 (
   MMSI INTEGER PRIMARY KEY,
@@ -38,7 +38,7 @@ CREATE TABLE positionReports
   timeReceived INTEGER
 );`;
 
-exports.createBaseStationTable = `
+export const createBaseStationTable = `
 CREATE TABLE baseStationReports
 (
   MMSI INTEGER PRIMARY KEY,
@@ -56,7 +56,7 @@ CREATE TABLE baseStationReports
   timeReceived INTEGER
 )`;
 
-exports.createWeatherBroadcastsTable = `
+export const createWeatherBroadcastsTable = `
 CREATE TABLE weatherBroadcasts
 (
   MMSI INTEGER PRIMARY KEY,
@@ -84,7 +84,7 @@ CREATE TABLE weatherBroadcasts
   timeReceived INTEGER
 );`;
 
-exports.createBuoyTable = `
+export const createBuoyTable = `
 CREATE TABLE buoys
 (
   MMSI INTEGER PRIMARY KEY,

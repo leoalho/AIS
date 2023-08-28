@@ -1,12 +1,12 @@
-const dgram = require("dgram");
-const http = require("http");
-const path = require("path");
-const fs = require("fs");
-const express = require("express");
-const socketIO = require("socket.io");
+import dgram from "dgram";
+import http from "http";
+import path from "path";
+import fs from "fs";
+import express from "express";
+import { Server } from "socket.io";
 
-const { parseMessage } = require("./parsers.js");
-const {
+import { parseMessage } from "./parsers";
+import {
   createDbConnection,
   updatePositionReport,
   updateWeatherBroadcast,
@@ -14,15 +14,24 @@ const {
   updateBuoy,
   updateVessel,
   getAllVessels,
-} = require("./database.js");
-const { addLeadingZeros } = require("./utils.js");
-const { ADDRESS, HTTP_PORT, UDP_PORT } = require("./config.js");
+} from "./database.js";
+import { addLeadingZeros } from "./utils";
+import { ADDRESS, HTTP_PORT, UDP_PORT } from "./config.js";
+import {
+  BaseStationQuery,
+  BinaryBroadcast,
+  BuoyQuery,
+  MessageQuery,
+  PositionReportQuery,
+  VoyageDataQuery,
+  WeatherReportQuery,
+} from "./types";
 
 const socket = dgram.createSocket({ type: "udp4", reuseAddr: true });
 const db = createDbConnection();
 let app = express();
 let server = http.createServer(app);
-let io = socketIO(server);
+let io = new Server(server);
 
 async function emitVessels() {
   const currentVessels = await getAllVessels(db);
@@ -30,32 +39,32 @@ async function emitVessels() {
   console.log("emitting");
 }
 
-async function update(vessel) {
+async function update(vessel: MessageQuery) {
   if (vessel.$messageType === 5) {
-    updateVessel(db, vessel);
+    updateVessel(db, vessel as VoyageDataQuery);
   } else if (
     vessel.$messageType === 8 &&
-    vessel.$dac === 1 &&
-    vessel.$fid === 11
+    (vessel as BinaryBroadcast).$dac === 1 &&
+    (vessel as BinaryBroadcast).$fid === 11
   ) {
-    updateWeatherBroadcast(db, vessel);
+    updateWeatherBroadcast(db, vessel as WeatherReportQuery);
   } else if (vessel.$messageType === 4) {
     console.log(vessel);
-    updateBaseStation(db, vessel);
+    updateBaseStation(db, vessel as BaseStationQuery);
   } else if (vessel.$messageType === 21) {
-    updateBuoy(db, vessel);
+    updateBuoy(db, vessel as BuoyQuery);
   } else if (vessel.$messageType <= 3) {
-    updatePositionReport(db, vessel);
+    updatePositionReport(db, vessel as PositionReportQuery);
   }
 }
 
-socket.on("message", (msg, rinfo) => {
+socket.on("message", (msg, _rinfo) => {
   let vessel = parseMessage(msg.toString());
   if (vessel) {
     update(vessel);
   }
   console.log(msg.toString());
-  let year = addLeadingZeros(new Date().getYear() - 100, 2);
+  let year = addLeadingZeros(new Date().getFullYear() - 100, 2);
   let month = addLeadingZeros(new Date().getMonth() + 1, 2);
   let date = addLeadingZeros(new Date().getDate(), 2);
   let fileName = "./AISdata/AIS-" + year + month + date + ".txt";

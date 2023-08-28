@@ -1,4 +1,4 @@
-const messageType = [
+export const messageType = [
   "Position Report Class A",
   "Position Report Class A (Assigned schedule)",
   "Position Report Class A (Response to interrogation)",
@@ -28,7 +28,7 @@ const messageType = [
   "Position Report For Long-Range Applications",
 ];
 
-const navStatus = [
+export const navStatus = [
   "Under way using engine",
   "At anchor",
   "Not under command",
@@ -47,7 +47,7 @@ const navStatus = [
   "Not defined (default)",
 ];
 
-const navAid = [
+export const navAid = [
   "Default",
   "Type of Aid to Navigation not specified",
   "Reference point",
@@ -83,7 +83,7 @@ const navAid = [
   "Light Vessel / LANBY / Rigs",
 ];
 
-const epfd = [
+export const epfd = [
   "GPS",
   "GLONASS",
   "Combined GPS/GLONASS",
@@ -94,7 +94,7 @@ const epfd = [
   "Galileo",
 ];
 
-const beaufort1 = [
+export const beaufort1 = [
   "Calm",
   "Light air",
   "Light breeze",
@@ -110,7 +110,7 @@ const beaufort1 = [
   "Hurricane force",
 ];
 
-const beaufort2 = [
+export const beaufort2 = [
   "Flat",
   "Ripples without crests",
   "Small wavelets. Crests of glassy appearance, not breaking",
@@ -126,7 +126,7 @@ const beaufort2 = [
   "Huge waves. Air filled with foam and spray. Sea completely white with driving spray. Visibility greatly reduced",
 ];
 
-const precipitation = [
+export const precipitation = [
   "N/A",
   "Rain",
   "Thunderstorm",
@@ -137,7 +137,7 @@ const precipitation = [
   "N/A (default)",
 ];
 
-const weatherStation = [
+export const weatherStation = [
   {
     id: 1,
     name: "Tulliniemi",
@@ -203,7 +203,7 @@ const weatherStation = [
   },
 ];
 
-const sixBitAscii = [
+export const sixBitAscii = [
   "@",
   "A",
   "B",
@@ -269,14 +269,3 @@ const sixBitAscii = [
   ">",
   "?",
 ];
-
-module.exports = {
-  messageType,
-  navStatus,
-  navAid,
-  epfd,
-  beaufort1,
-  beaufort2,
-  precipitation,
-  sixBitAscii,
-};

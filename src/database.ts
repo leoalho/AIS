@@ -1,13 +1,25 @@
-const sqlite3 = require("sqlite3").verbose();
-const fs = require("fs");
-const path = require("path");
-const { DB_NAME } = require("./config.js");
+import sqlite3 from "sqlite3";
+import fs from "fs";
+import path from "path";
+import { DB_NAME } from "./config.js";
 
 const filepath = path.join(__dirname, `../${DB_NAME}`);
-const sql_init = require("./sql_init");
-const sql = require("./sql");
+import * as sql_init from "./sql_init";
+import * as sql from "./sql";
+import {
+  BaseStationQuery,
+  Buoy,
+  BuoyQuery,
+  Message,
+  PositionReportQuery,
+  VoyageDataQuery,
+  WeatherReport,
+  WeatherReportQuery,
+} from "./types.js";
 
-const createTable = (db) => {
+sqlite3.verbose();
+
+const createTable = (db: sqlite3.Database) => {
   db.exec(sql_init.createVesselTable);
   db.exec(sql_init.createPositionReportTable);
   db.exec(sql_init.createBaseStationTable);
@@ -15,7 +27,7 @@ const createTable = (db) => {
   db.exec(sql_init.createBuoyTable);
 };
 
-const createDbConnection = () => {
+export const createDbConnection = () => {
   const fileExists = fs.existsSync(filepath);
   const db = new sqlite3.Database(filepath, (error) => {
     if (error) {
@@ -29,7 +41,10 @@ const createDbConnection = () => {
   return db;
 };
 
-const updatePositionReport = (db, message) => {
+export const updatePositionReport = (
+  db: sqlite3.Database,
+  message: PositionReportQuery
+) => {
   db.run(sql.updatePositionReport, message, function (err) {
     if (err) {
       return console.error(err.message);
@@ -37,7 +52,10 @@ const updatePositionReport = (db, message) => {
   });
 };
 
-const updateWeatherBroadcast = (db, message) => {
+export const updateWeatherBroadcast = (
+  db: sqlite3.Database,
+  message: WeatherReportQuery
+) => {
   db.run(sql.updateWeatherBroadcast, message, function (err) {
     if (err) {
       return console.error(err.message);
@@ -45,7 +63,10 @@ const updateWeatherBroadcast = (db, message) => {
   });
 };
 
-const updateBaseStation = (db, message) => {
+export const updateBaseStation = (
+  db: sqlite3.Database,
+  message: BaseStationQuery
+) => {
   db.run(sql.updateBaseStation, message, function (err) {
     if (err) {
       return console.error(err.message);
@@ -53,7 +74,10 @@ const updateBaseStation = (db, message) => {
   });
 };
 
-const updateVessel = (db, message) => {
+export const updateVessel = (
+  db: sqlite3.Database,
+  message: VoyageDataQuery
+) => {
   db.run(sql.updateVessel, message, function (err) {
     if (err) {
       return console.error(err.message);
@@ -61,7 +85,7 @@ const updateVessel = (db, message) => {
   });
 };
 
-const updateBuoy = (db, message) => {
+export const updateBuoy = (db: sqlite3.Database, message: BuoyQuery) => {
   db.run(sql.updateBuoy, message, function (err) {
     if (err) {
       return console.error(err.message);
@@ -69,7 +93,9 @@ const updateBuoy = (db, message) => {
   });
 };
 
-const getPositionReports = async (db) => {
+export const getPositionReports = async (
+  db: sqlite3.Database
+): Promise<Message[]> => {
   return new Promise((resolve, reject) => {
     db.all(
       sql.getPositionReports,
@@ -78,47 +104,57 @@ const getPositionReports = async (db) => {
         if (err) {
           return reject(err);
         }
-        return resolve(rows);
+        return resolve(rows as Message[]);
       }
     );
   });
 };
 
-const getBaseStations = async (db) => {
+export const getBaseStations = async (
+  db: sqlite3.Database
+): Promise<Message[]> => {
   return new Promise((resolve, reject) => {
-    db.all(sql.getBaseStations, (err, rows) => {
-      if (err) {
-        return reject(err);
+    db.all(
+      sql.getBaseStations,
+      { $time: new Date().getTime() - 60000 * 10 },
+      (err, rows) => {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(rows as Message[]);
       }
-      return resolve(rows);
-    });
+    );
   });
 };
 
-const getWeatherReports = async (db) => {
+export const getWeatherReports = async (
+  db: sqlite3.Database
+): Promise<WeatherReport[]> => {
   return new Promise((resolve, reject) => {
     db.all(sql.getWeatherStations, (err, rows) => {
       if (err) {
         return reject(err);
       }
-      return resolve(rows);
+      return resolve(rows as WeatherReport[]);
     });
   });
 };
 
-const getBuoys = async (db) => {
+export const getBuoys = async (db: sqlite3.Database): Promise<Buoy[]> => {
   return new Promise((resolve, reject) => {
     db.all(sql.getBuoys, (err, rows) => {
       if (err) {
         return reject(err);
       }
-      return resolve(rows);
+      return resolve(rows as Buoy[]);
     });
   });
 };
 
-const getAllVessels = async (db) => {
-  const currentVessels = [];
+export const getAllVessels = async (
+  db: sqlite3.Database
+): Promise<Message[]> => {
+  const currentVessels: Message[] = [];
 
   let positionReports = await getPositionReports(db);
   positionReports.forEach((report) => currentVessels.push(report));
@@ -133,14 +169,4 @@ const getAllVessels = async (db) => {
   buoys.forEach((report) => currentVessels.push(report));
 
   return currentVessels;
-};
-
-module.exports = {
-  createDbConnection,
-  updatePositionReport,
-  updateWeatherBroadcast,
-  updateBaseStation,
-  updateBuoy,
-  updateVessel,
-  getAllVessels,
 };
